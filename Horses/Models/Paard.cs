@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Horses.DataAccess;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,8 @@ namespace Horses.Models
 {
     public class Paard
     {
+        private PaardContext Context;
+
         public int Id { get; set; }
 
         public string Naam { get; set; }

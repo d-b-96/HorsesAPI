@@ -1,4 +1,5 @@
-﻿using Horses.Service;
+﻿using Horses.DataAccess;
+using Horses.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,7 @@ namespace Horses
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSingleton<IPaardService, PaardService>();
+            services.Add(new ServiceDescriptor(typeof(PaardContext), new PaardContext(Configuration.GetConnectionString("DefaultConnection"))));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
