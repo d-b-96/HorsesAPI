@@ -8,8 +8,6 @@ namespace Horses.Models
 {
     public class Paard
     {
-        private PaardContext Context;
-
         public int Id { get; set; }
 
         public string Naam { get; set; }
