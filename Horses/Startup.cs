@@ -22,6 +22,8 @@ namespace Horses
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSingleton<IPaardService, PaardService>();
+            services.AddSingleton<IPaardRepo, PaardRepo>();
+            //services.AddSingleton<IPaardRepo, InMemoryPaardRepo>();
             services.Add(new ServiceDescriptor(typeof(PaardContext), new PaardContext(Configuration.GetConnectionString("DefaultConnection"))));
         }
 
