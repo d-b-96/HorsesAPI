@@ -17,10 +17,7 @@ namespace Horses.DataAccess
 
         public MySqlConnection GetConnection()
         {
-            string connectionString = "Server=https://db4free.net/phpmyadmin;Database=gpsporthorses;UserID=matijs;Password=Glekke69;";
-            //string connectionString = "Server=localhost:3306;Database=gpsporthorses;UserID=matijs;Password=Glekke69;";
-
-            return new MySqlConnection(connectionString);
+            return new MySqlConnection(ConnectionString);
         }
     }
 }

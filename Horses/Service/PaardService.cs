@@ -20,6 +20,7 @@ namespace Horses.Service
 
         public IEnumerable<Paard> GetAllPaarden()
         {
+            //dummytest x
             //return InMemoryPaarden.Paarden;
             IList<Paard> paarden = new List<Paard>();
 
@@ -51,10 +52,40 @@ namespace Horses.Service
 
         public Paard GetPaardById(int id)
         {
-            return InMemoryPaarden.Paarden.FirstOrDefault(p => p.Id == id);
+            //dummytest x
+            //return InMemoryPaarden.Paarden.FirstOrDefault(p => p.Id == id);
+
+            Paard paard = new Paard();
+
+            using (MySqlConnection conn = Context.GetConnection())
+            {
+                conn.Open();
+                
+                MySqlCommand cmd = new MySqlCommand("select * from gp_paarden where id = " + id + ";", conn);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        paard = new Paard()
+                        {
+                            Id = Convert.ToInt32(reader["id"]),
+                            Naam = reader["naam"].ToString(),
+                            Type = Convert.ToInt32(reader["type"]),
+                            GeboorteDag = DateTime.Now,
+                            Geslacht = reader["geslacht"].ToString(),
+                            Hoogte = Convert.ToInt32(reader["type"]),
+                            Beschrijving = reader["beschrijving"].ToString(),
+                            Profielfoto = reader["Profielfoto"].ToString(),
+                        };
+                    }
+                }
+            }
+            return paard;
         }
     }
 
+    /*
     public static class InMemoryPaarden
     {
         public static IEnumerable<Paard> Paarden = new List<Paard>() {
@@ -91,5 +122,6 @@ namespace Horses.Service
                 Profielfoto = "url",
             },
         };
-    }
+        
+    }*/
 }
