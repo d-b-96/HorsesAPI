@@ -15,8 +15,8 @@ namespace Horses.DataAccess
             "SELECT " +
             "p.id as p_id, p.naam, p.type as p_type, p.geboorteDag, p.geslacht, p.hoogte, p.beschrijving as p_beschrijving, p.profielfoto, p.media, p.link, p.by_who as p_by_who, p.created_at as p_created_at, p.updated_at as p_updated_at, " +
             "u.id as u_id, u.volgorde, u.type as u_type, u.afbeelding, u.url, u.beschrijving as u_beschrijving, u.by_who as u_by_who, u.updated_at as u_updated_at, u.created_at as u_created_at " +
-            "FROM gp_paarden p LEFT JOIN gp_paarden_upload u ON(p.id = u.paard_id)";
-       
+            "FROM gp_paarden p LEFT JOIN gp_paarden_upload u ON(p.id = u.paard_id) ";
+
         public PaardRepo(PaardContext paardContext)
         {
             _context = paardContext;
@@ -39,7 +39,7 @@ namespace Horses.DataAccess
                         bool exists = false;
                         Paard paard;
 
-                        foreach(var p in paarden)
+                        foreach (var p in paarden)
                         {
                             if (p.Id == id) exists = true;
                         }
@@ -99,11 +99,11 @@ namespace Horses.DataAccess
                             CreatedAt = createdAt,
                             UpdatedAt = updatedAt,
                         };
-                        
+
                         List<PaardUpload> pus = paard.PaardUploads.ToList();
                         pus.Add(pu);
                         paard.PaardUploads = pus;
-                        
+
                         if (!exists) paarden.Add(paard);
                     }
                 }
@@ -114,28 +114,73 @@ namespace Horses.DataAccess
 
         public Paard GetPaardById(int id)
         {
-            Paard paard = new Paard();
+            Paard paard = null;
 
             using (MySqlConnection conn = _context.GetConnection())
             {
                 conn.Open();
-                MySqlCommand cmd = new MySqlCommand(Query + "WHERE p_id = " + id + ";", conn);
+                MySqlCommand cmd = new MySqlCommand(Query + "WHERE p.id = " + id + ";", conn);
+
 
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        paard = new Paard()
+                        if (paard == null)
                         {
-                            Id = Convert.ToInt32(reader["id"]),
-                            Naam = reader["naam"].ToString(),
-                            Type = Convert.ToInt32(reader["type"]),
-                            GeboorteDag = DateTime.Now,
-                            Geslacht = reader["geslacht"].ToString(),
-                            Hoogte = Convert.ToInt32(reader["type"]),
-                            Beschrijving = reader["beschrijving"].ToString(),
-                            Profielfoto = reader["profielfoto"].ToString(),
+                            paard = new Paard()
+                            {
+                                Id = Convert.ToInt32(reader["p_id"]),
+                                Naam = reader["naam"].ToString(),
+                                Type = Convert.ToInt32(reader["p_type"]),
+                                GeboorteDag = DateTime.Now,
+                                Geslacht = reader["geslacht"].ToString(),
+                                Hoogte = Convert.ToInt32(reader["hoogte"]),
+                                Beschrijving = reader["p_beschrijving"].ToString(),
+                                Profielfoto = reader["profielfoto"].ToString(),
+                                Media = reader["media"].ToString(),
+                                Link = reader["link"].ToString(),
+                                ByWho = reader["p_by_who"].ToString(),
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now,
+                                PaardUploads = new List<PaardUpload>()
+                            };
+                        }
+
+                        int uId = 0;
+                        int volgorde = 0;
+                        int type = 0;
+                        string afbeelding = "";
+                        string url = "";
+                        string beschrijving = "";
+                        string byWho = "";
+                        DateTime createdAt = DateTime.Now;
+                        DateTime updatedAt = DateTime.Now;
+
+                        if (!(reader["u_id"] is DBNull)) uId = Convert.ToInt32(reader["u_id"]);
+                        if (!(reader["volgorde"] is DBNull)) volgorde = Convert.ToInt32(reader["volgorde"]);
+                        if (!(reader["u_type"] is DBNull)) type = Convert.ToInt32(reader["u_type"]);
+                        if (!(reader["afbeelding"] is DBNull)) afbeelding = reader["afbeelding"].ToString();
+                        if (!(reader["url"] is DBNull)) url = reader["url"].ToString();
+                        if (!(reader["u_beschrijving"] is DBNull)) beschrijving = reader["u_beschrijving"].ToString();
+                        if (!(reader["u_by_who"] is DBNull)) byWho = reader["u_by_who"].ToString();
+
+                        PaardUpload pu = new PaardUpload()
+                        {
+                            Id = uId,
+                            Volgorde = volgorde,
+                            Type = type,
+                            Afbeelding = afbeelding,
+                            Url = url,
+                            Beschrijving = beschrijving,
+                            ByWho = byWho,
+                            CreatedAt = createdAt,
+                            UpdatedAt = updatedAt,
                         };
+
+                        List<PaardUpload> pus = paard.PaardUploads.ToList();
+                        pus.Add(pu);
+                        paard.PaardUploads = pus;
                     }
                 }
             }
