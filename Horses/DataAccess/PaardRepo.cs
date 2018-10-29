@@ -99,15 +99,11 @@ namespace Horses.DataAccess
                             CreatedAt = createdAt,
                             UpdatedAt = updatedAt,
                         };
-
-                        /*
-                        foreach (var x in paarden.Where(c => c.Id == id))
-                        {
-                            x.PaardUploads.ToList().Add(pu);
-                        }
-                        */
-
-                        //paard.PaardUploads.ToList().Add(pu);
+                        
+                        List<PaardUpload> pus = paard.PaardUploads.ToList();
+                        pus.Add(pu);
+                        paard.PaardUploads = pus;
+                        
                         if (!exists) paarden.Add(paard);
                     }
                 }
@@ -139,7 +135,6 @@ namespace Horses.DataAccess
                             Hoogte = Convert.ToInt32(reader["type"]),
                             Beschrijving = reader["beschrijving"].ToString(),
                             Profielfoto = reader["profielfoto"].ToString(),
-
                         };
                     }
                 }
