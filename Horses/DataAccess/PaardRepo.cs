@@ -39,67 +39,12 @@ namespace Horses.DataAccess
                         bool exists = false;
                         Paard paard;
 
-                        foreach (var p in paarden)
-                        {
-                            if (p.Id == id) exists = true;
-                        }
-
-                        if (exists)
-                        {
-                            paard = paarden.FirstOrDefault(p => p.Id == id);
-                        }
-                        else
-                        {
-                            paard = new Paard()
-                            {
-                                Id = id,
-                                Naam = reader["naam"].ToString(),
-                                Type = Convert.ToInt32(reader["p_type"]),
-                                GeboorteDag = DateTime.Now,
-                                Geslacht = reader["geslacht"].ToString(),
-                                Hoogte = Convert.ToInt32(reader["hoogte"]),
-                                Beschrijving = reader["p_beschrijving"].ToString(),
-                                Profielfoto = reader["profielfoto"].ToString(),
-                                Media = reader["media"].ToString(),
-                                Link = reader["link"].ToString(),
-                                ByWho = reader["p_by_who"].ToString(),
-                                CreatedAt = DateTime.Now,
-                                UpdatedAt = DateTime.Now,
-                                PaardUploads = new List<PaardUpload>()
-                            };
-                        }
-
-                        int uId = 0;
-                        int volgorde = 0;
-                        int type = 0;
-                        string afbeelding = "";
-                        string url = "";
-                        string beschrijving = "";
-                        string byWho = "";
-                        DateTime createdAt = DateTime.Now;
-                        DateTime updatedAt = DateTime.Now;
-
-                        if (!(reader["u_id"] is DBNull)) uId = Convert.ToInt32(reader["u_id"]);
-                        if (!(reader["volgorde"] is DBNull)) volgorde = Convert.ToInt32(reader["volgorde"]);
-                        if (!(reader["u_type"] is DBNull)) type = Convert.ToInt32(reader["u_type"]);
-                        if (!(reader["afbeelding"] is DBNull)) afbeelding = reader["afbeelding"].ToString();
-                        if (!(reader["url"] is DBNull)) url = reader["url"].ToString();
-                        if (!(reader["u_beschrijving"] is DBNull)) beschrijving = reader["u_beschrijving"].ToString();
-                        if (!(reader["u_by_who"] is DBNull)) byWho = reader["u_by_who"].ToString();
-
-                        PaardUpload pu = new PaardUpload()
-                        {
-                            Id = uId,
-                            Volgorde = volgorde,
-                            Type = type,
-                            Afbeelding = afbeelding,
-                            Url = url,
-                            Beschrijving = beschrijving,
-                            ByWho = byWho,
-                            CreatedAt = createdAt,
-                            UpdatedAt = updatedAt,
-                        };
-
+                        foreach (var p in paarden) if (p.Id == id) exists = true;
+                    
+                        if (exists)  paard = paarden.FirstOrDefault(p => p.Id == id);
+                        else paard = PaardConverter(reader);
+                       
+                        PaardUpload pu = PaardUploadConverter(reader);
                         List<PaardUpload> pus = paard.PaardUploads.ToList();
                         pus.Add(pu);
                         paard.PaardUploads = pus;
@@ -111,7 +56,7 @@ namespace Horses.DataAccess
 
             return paarden;
         }
-
+        
         public Paard GetPaardById(int id)
         {
             Paard paard = null;
@@ -126,58 +71,11 @@ namespace Horses.DataAccess
                 {
                     while (reader.Read())
                     {
-                        if (paard == null)
-                        {
-                            paard = new Paard()
-                            {
-                                Id = Convert.ToInt32(reader["p_id"]),
-                                Naam = reader["naam"].ToString(),
-                                Type = Convert.ToInt32(reader["p_type"]),
-                                GeboorteDag = DateTime.Now,
-                                Geslacht = reader["geslacht"].ToString(),
-                                Hoogte = Convert.ToInt32(reader["hoogte"]),
-                                Beschrijving = reader["p_beschrijving"].ToString(),
-                                Profielfoto = reader["profielfoto"].ToString(),
-                                Media = reader["media"].ToString(),
-                                Link = reader["link"].ToString(),
-                                ByWho = reader["p_by_who"].ToString(),
-                                CreatedAt = DateTime.Now,
-                                UpdatedAt = DateTime.Now,
-                                PaardUploads = new List<PaardUpload>()
-                            };
-                        }
+                        if (paard == null) paard = PaardConverter(reader);
 
-                        int uId = 0;
-                        int volgorde = 0;
-                        int type = 0;
-                        string afbeelding = "";
-                        string url = "";
-                        string beschrijving = "";
-                        string byWho = "";
-                        DateTime createdAt = DateTime.Now;
-                        DateTime updatedAt = DateTime.Now;
-
-                        if (!(reader["u_id"] is DBNull)) uId = Convert.ToInt32(reader["u_id"]);
-                        if (!(reader["volgorde"] is DBNull)) volgorde = Convert.ToInt32(reader["volgorde"]);
-                        if (!(reader["u_type"] is DBNull)) type = Convert.ToInt32(reader["u_type"]);
-                        if (!(reader["afbeelding"] is DBNull)) afbeelding = reader["afbeelding"].ToString();
-                        if (!(reader["url"] is DBNull)) url = reader["url"].ToString();
-                        if (!(reader["u_beschrijving"] is DBNull)) beschrijving = reader["u_beschrijving"].ToString();
-                        if (!(reader["u_by_who"] is DBNull)) byWho = reader["u_by_who"].ToString();
-
-                        PaardUpload pu = new PaardUpload()
-                        {
-                            Id = uId,
-                            Volgorde = volgorde,
-                            Type = type,
-                            Afbeelding = afbeelding,
-                            Url = url,
-                            Beschrijving = beschrijving,
-                            ByWho = byWho,
-                            CreatedAt = createdAt,
-                            UpdatedAt = updatedAt,
-                        };
-
+                        PaardUpload pu = PaardUploadConverter(reader);
+                        
+                        // ik wil deze shitcode nog refactoren maar ik ben maar een junior developer en ik word hier nieens voor betaald dus waarom zou ik eigenlijk?xd
                         List<PaardUpload> pus = paard.PaardUploads.ToList();
                         pus.Add(pu);
                         paard.PaardUploads = pus;
@@ -186,6 +84,64 @@ namespace Horses.DataAccess
             }
 
             return paard;
+        }
+
+
+        // convert sql-paard to obj-paard
+        private Paard PaardConverter(MySqlDataReader reader)
+        {
+            return new Paard()
+            {
+                Id = Convert.ToInt32(reader["p_id"]),
+                Naam = reader["naam"].ToString(),
+                Type = Convert.ToInt32(reader["p_type"]),
+                GeboorteDag = DateTime.Now,
+                Geslacht = reader["geslacht"].ToString(),
+                Hoogte = Convert.ToInt32(reader["hoogte"]),
+                Beschrijving = reader["p_beschrijving"].ToString(),
+                Profielfoto = reader["profielfoto"].ToString(),
+                Media = reader["media"].ToString(),
+                Link = reader["link"].ToString(),
+                ByWho = reader["p_by_who"].ToString(),
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                PaardUploads = new List<PaardUpload>()
+            };
+        }
+
+        // convert sql-paardUpload to obj-paardUpload
+        private PaardUpload PaardUploadConverter(MySqlDataReader reader)
+        {
+            int uId = 0;
+            int volgorde = 0;
+            int type = 0;
+            string afbeelding = "";
+            string url = "";
+            string beschrijving = "";
+            string byWho = "";
+            DateTime createdAt = DateTime.Now;
+            DateTime updatedAt = DateTime.Now;
+
+            if (!(reader["u_id"] is DBNull)) uId = Convert.ToInt32(reader["u_id"]);
+            if (!(reader["volgorde"] is DBNull)) volgorde = Convert.ToInt32(reader["volgorde"]);
+            if (!(reader["u_type"] is DBNull)) type = Convert.ToInt32(reader["u_type"]);
+            if (!(reader["afbeelding"] is DBNull)) afbeelding = reader["afbeelding"].ToString();
+            if (!(reader["url"] is DBNull)) url = reader["url"].ToString();
+            if (!(reader["u_beschrijving"] is DBNull)) beschrijving = reader["u_beschrijving"].ToString();
+            if (!(reader["u_by_who"] is DBNull)) byWho = reader["u_by_who"].ToString();
+
+            return new PaardUpload()
+            {
+                Id = uId,
+                Volgorde = volgorde,
+                Type = type,
+                Afbeelding = afbeelding,
+                Url = url,
+                Beschrijving = beschrijving,
+                ByWho = byWho,
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt,
+            };
         }
     }
 }
